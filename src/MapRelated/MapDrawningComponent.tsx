@@ -1,10 +1,15 @@
-import { MutableRefObject, useState } from 'react';
-import { Map } from 'ol';
+import React, {MutableRefObject, useState} from 'react';
+import {Map} from 'ol';
 import Draw from 'ol/interaction/Draw';
 import VectorSource from 'ol/source/Vector';
-import { Circle as CircleGeom, Point } from 'ol/geom';
-import { toLonLat, fromLonLat } from 'ol/proj';
+import {Point} from 'ol/geom';
+import {fromLonLat} from 'ol/proj';
+import {Icon, Style} from 'ol/style';
+import Feature from 'ol/Feature';
+import {Azienda} from '../Data/Azienda';
+import {fetchEveryCompany, searchInArea, setSearchInfo} from "./SearchMapFunctions";
 
+// Define the props for the MapDrawingComponent
 interface MapDrawingComponentProps {
     mapObjRef: MutableRefObject<Map | null>;
     drawInteraction: Draw | null;
@@ -12,36 +17,60 @@ interface MapDrawingComponentProps {
     vectorSourceRef: MutableRefObject<VectorSource | null>;
 }
 
-const handleRemoveCirclesClick = (vectorSourceRef: MutableRefObject<VectorSource | null>) => {
+const handleRemovePreviewSearcherResults = (vectorSourceRef: MutableRefObject<VectorSource | null>) => {
     if (vectorSourceRef.current) {
         const features = vectorSourceRef.current.getFeatures();
         features.forEach((feature) => {
             const geometry = feature.getGeometry();
-            if (geometry && geometry.getType() === 'Circle') {
+            if ((geometry && geometry.getType() === 'Circle' || geometry && geometry.getType() === 'Point') && !feature.get('isFixedMarker')) {
                 vectorSourceRef.current?.removeFeature(feature);
             }
         });
     }
 };
 
-const calculateSquareVertices = (center: number[], radius: number) => {
-    const [lon, lat] = center;
-    const topLeft = toLonLat(fromLonLat([lon - radius, lat + radius]));
-    const bottomRight = toLonLat(fromLonLat([lon + radius, lat - radius]));
-    return { topLeft, bottomRight };
-};
-
+// Main component for drawing on the map
 const MapDrawingComponent = ({
                                  mapObjRef,
                                  drawInteraction,
                                  setDrawInteraction,
                                  vectorSourceRef,
                              }: MapDrawingComponentProps) => {
-    const [circleInfo, setCircleInfo] = useState<{ center: number[], radius: number, pointOnCircumference: number[] } | null>(null);
+    const [circleInfo, setCircleInfo] = useState<{
+        center: number[],
+        radius: number
+    } | null>(null);
     const [squareVertices, setSquareVertices] = useState<{ topLeft: number[], bottomRight: number[] } | null>(null);
+    const [companyNames, setCompanyNames] = useState<string[]>([]);
+    const [aziende, setAziende] = useState<Azienda[]>([]);
+    var _vectorSourceRef = vectorSourceRef;
 
+    // Function to create a marker for a company
+    const createMarker = (company: any, vectorSourceRef: MutableRefObject<VectorSource | null>) => {
+        if (!company.geometry || !company.geometry.coordinates) {
+            console.error('Invalid company data:', company);
+            return;
+        }
+
+        const marker = new Feature({
+            geometry: new Point(fromLonLat(company.geometry.coordinates)),
+            companyInfo: company.properties,
+        });
+
+        marker.setStyle(new Style({
+            image: new Icon({
+                src: 'https://openlayers.org/en/latest/examples/data/icon.png', // Path to your marker icon
+                scale: 1, // Adjust the scale as needed
+            }),
+        }));
+
+        vectorSourceRef.current?.addFeature(marker);
+    };
+
+    // Function to handle the draw button click event
     const handleDrawButtonClick = () => {
-        handleRemoveCirclesClick(vectorSourceRef);
+        handleRemovePreviewSearcherResults(vectorSourceRef);
+        _vectorSourceRef = vectorSourceRef;
         if (mapObjRef.current) {
             if (drawInteraction) {
                 mapObjRef.current.removeInteraction(drawInteraction);
@@ -52,16 +81,7 @@ const MapDrawingComponent = ({
                     type: 'Circle',
                 });
 
-                draw.on('drawend', (event) => {
-                    const circle = event.feature.getGeometry() as CircleGeom;
-                    const center = toLonLat(circle.getCenter());
-                    const radius = circle.getRadius();
-                    const pointOnCircumference = toLonLat([circle.getCenter()[0], circle.getCenter()[1] + radius]);
-                    setCircleInfo({ center, radius, pointOnCircumference });
-                    setSquareVertices(calculateSquareVertices(center, radius));
-                    setDrawInteraction(null);
-                    mapObjRef.current?.removeInteraction(draw);
-                });
+                setSearchInfo(draw, setCircleInfo, setSquareVertices, setDrawInteraction, mapObjRef);
 
                 setDrawInteraction(draw);
                 mapObjRef.current.addInteraction(draw);
@@ -69,44 +89,38 @@ const MapDrawingComponent = ({
         }
     };
 
-    const handleSearchButtonClick = () => {
+    // Function to handle the search button click event
+    const handleSearchButtonClick = async () => {
         if (squareVertices) {
-            const { topLeft, bottomRight } = squareVertices;
-
-            // Verifica i marker
-            const markers = vectorSourceRef.current?.getFeatures().filter(feature => {
-                const geometry = feature.getGeometry();
-                if (geometry && geometry.getType() === 'Point') {
-                    const point = (geometry as Point).getCoordinates();
-                    const distance = Math.sqrt(
-                        Math.pow(point[0] - fromLonLat(circleInfo!.center)[0], 2) +
-                        Math.pow(point[1] - fromLonLat(circleInfo!.center)[1], 2)
-                    );
-                    return distance <= circleInfo!.radius;
-                }
-                return false;
-            });
-
-            alert(`Marker all'interno del cerchio: ${markers?.length}`);
+            await searchInArea(squareVertices, setCompanyNames, setAziende, createMarker, _vectorSourceRef);
         } else {
             alert('Nessun cerchio disegnato');
         }
     };
-    
+
+    // Function to fetch all company names and create markers for them
+    const fetchCompanyNames = async () => {
+        await fetchEveryCompany(setCompanyNames, createMarker, vectorSourceRef);
+    };
 
     return (
         <div>
             <button
-                style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}
+                style={{position: 'absolute', top: 10, right: 10, zIndex: 1000}}
                 onClick={handleDrawButtonClick}
             >
                 Disegna un Cerchio
             </button>
             <button
-                style={{ position: 'absolute', top: 50, right: 10, zIndex: 1000 }}
+                style={{position: 'absolute', top: 50, right: 10, zIndex: 1000}}
                 onClick={handleSearchButtonClick}
             >
                 Cerca in questa area
+            </button>
+            <button
+                style={{position: 'absolute', top: 90, right: 10, zIndex: 1000}}
+                onClick={fetchCompanyNames}>
+                Vedi tutte le aziende
             </button>
         </div>
     );
