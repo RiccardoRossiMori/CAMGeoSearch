@@ -1,4 +1,3 @@
-// Import necessary modules and components
 import React, { useEffect, useRef, useState } from 'react';
 import { Map, View } from 'ol';
 import 'ol/ol.css';
@@ -15,8 +14,9 @@ import { MapBrowserEvent } from 'ol';
 import Geometry from 'ol/geom/Geometry';
 import "./Map.css";
 import MapDrawingComponent from './MapDrawningComponent';
+import SearchBar from './SearchBar';
+import CompanyInfoModal from './CompanyInfoModal';
 
-// Initialize the map and add layers
 const initializeMap = (
     mapRef: React.MutableRefObject<HTMLDivElement | null>,
     vectorSourceRef: React.MutableRefObject<VectorSource | null>,
@@ -42,17 +42,13 @@ const initializeMap = (
 
     const vectorSource = new VectorSource();
     vectorSourceRef.current = vectorSource;
-    const vectorLayer = new VectorLayer({
-        source: vectorSource,
-    });
 
-    mapObj.addLayer(vectorLayer);
+    mapObj.addLayer(new VectorLayer({source: vectorSource}));
     mapObjRef.current = mapObj;
 
     return mapObj;
 };
 
-// Add markers to the map
 const addMarkers = (mapObj: Map, vectorSource: VectorSource | null) => {
     const newMarkers = [
         { lon: 13.0688300, lat: 43.1396760, name: 'Università di Camerino, Sezione di Informatica' }
@@ -80,20 +76,22 @@ const addMarkers = (mapObj: Map, vectorSource: VectorSource | null) => {
     vectorSource?.addFeatures(newFeatures);
 };
 
-// Main component for the map
 const MapComponent = () => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const [drawInteraction, setDrawInteraction] = useState<Draw | null>(null);
     const vectorSourceRef = useRef<VectorSource | null>(null);
     const mapObjRef = useRef<Map | null>(null);
+    const [sectors, setSectors] = useState<string[]>([]);
+    const [selectedSector, setSelectedSector] = useState<string>('');
+    const [companyNames, setCompanyNames] = useState<string[]>([]);
+    const [aziende, setAziende] = useState<any[]>([]);
+    const [selectedCompanyInfo, setSelectedCompanyInfo] = useState<any>(null);
 
-    // Initialize the map and add event listeners
     useEffect(() => {
         const mapObj = initializeMap(mapRef, vectorSourceRef, mapObjRef);
         if (mapObj) {
             addMarkers(mapObj, vectorSourceRef.current);
 
-            // Add click event listener for markers
             mapObj.on('click', (evt: MapBrowserEvent<UIEvent>) => {
                 const feature = mapObj.forEachFeatureAtPixel(evt.pixel,
                     (feature) => feature as Feature<Geometry>
@@ -101,13 +99,26 @@ const MapComponent = () => {
 
                 if (feature && feature.get('companyInfo')) {
                     const companyInfo = feature.get('companyInfo');
-                    alert(`Nome: ${companyInfo.Nome}\nPosizione: ${companyInfo.Posizione}\nSito: ${companyInfo.Sito}\nSettore: ${companyInfo.Settore}\nKeywords: ${companyInfo.Keywords}\nDescrizione: ${companyInfo.Descrizione}`);
+                    setSelectedCompanyInfo(companyInfo);
                 }
             });
         }
 
+        fetch('/api/companies')
+            .then(response => response.json())
+            .then(data => {
+                const sectors = data.flatMap((company: { properties: { Settore: string; }; }) =>
+                    company.properties.Settore.split(',').map(sector => sector.trim())
+                );
+                setSectors([...new Set(sectors)] as string[]);
+            });
+
         return () => mapObj?.setTarget('');
     }, []);
+
+    const handleSearch = (sector: string) => {
+        setSelectedSector(sector);
+    };
 
     return (
         <div>
@@ -116,8 +127,23 @@ const MapComponent = () => {
                 drawInteraction={drawInteraction}
                 setDrawInteraction={setDrawInteraction}
                 vectorSourceRef={vectorSourceRef}
+                selectedSector={selectedSector} // Pass selectedSector prop
             />
             <div className="map" ref={mapRef} />
+            <SearchBar
+                onSearch={handleSearch}
+                sectors={sectors}
+                vectorSourceRef={vectorSourceRef}
+                setSelectedSector={setSelectedSector}
+                setCompanyNames={setCompanyNames}
+                setAziende={setAziende}
+            />
+            {selectedCompanyInfo && (
+                <CompanyInfoModal
+                    companyInfo={selectedCompanyInfo}
+                    onClose={() => setSelectedCompanyInfo(null)}
+                />
+            )}
         </div>
     );
 };

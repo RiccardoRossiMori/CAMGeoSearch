@@ -17,38 +17,38 @@ export const calculateSquareVertices = (center: number[], radius: number) => {
     // Convert radius from meters to degrees
     const radiusLat = radius * latConversionFactor;
     const radiusLon = radius * lonConversionFactor;
-
-    const topLeft = [lon - radiusLon, lat + radiusLat];
-    const bottomRight = [lon + radiusLon, lat - radiusLat];
-
-    return {topLeft, bottomRight};
+    return {
+        topLeft: [lon - radiusLon, lat + radiusLat],
+        bottomRight: [lon + radiusLon, lat - radiusLat]
+    };
 };
 
-export async function searchInArea(squareVertices: {
-    topLeft: number[];
-    bottomRight: number[]
-}, setCompanyNames: (value: (((prevState: string[]) => string[]) | string[])) => void, setAziende: (value: (((prevState: Azienda[]) => Azienda[]) | Azienda[])) => void, createMarker: (company: any, vectorSourceRef: React.MutableRefObject<VectorSource | null>) => void, _vectorSourceRef: React.MutableRefObject<VectorSource | null>) {
-    const {topLeft, bottomRight} = squareVertices;
+export async function searchInArea(
+    squareVertices: { topLeft: number[]; bottomRight: number[] },
+    setCompanyNames: (value: (((prevState: string[]) => string[]) | string[])) => void,
+    setAziende: (value: (((prevState: Azienda[]) => Azienda[]) | Azienda[])) => void,
+    createMarker: (company: any, vectorSourceRef: React.MutableRefObject<VectorSource | null>) => void,
+    _vectorSourceRef: React.MutableRefObject<VectorSource | null>,
+    sector: string
+) {
+    const { topLeft, bottomRight } = squareVertices;
 
     try {
         const response = await fetch('/api/companies');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
         const data = await response.json();
         setCompanyNames(data.map((company: { properties: { Nome: string } }) => company.properties.Nome));
 
-        // Filter companies within the drawn area
-        const filteredCompanies = data.filter((company: { geometry: { coordinates: [number, number] } }) => {
+        // Filter companies within the drawn area and by sector
+        const filteredCompanies = data.filter((company: { geometry: { coordinates: [number, number] }, properties: { Settore: string } }) => {
             const [lon, lat] = company.geometry.coordinates;
-            return lon >= topLeft[0] && lon <= bottomRight[0] && lat >= bottomRight[1] && lat <= topLeft[1];
+            return lon >= topLeft[0] && lon <= bottomRight[0] && lat >= bottomRight[1] && lat <= topLeft[1] && (sector === '' || company.properties.Settore.includes(sector));
         });
         alert(`Number of companies found: ${filteredCompanies.length}`);
 
-        // Clear existing Azienda objects
         setAziende([]);
 
-        // Create new Azienda objects and markers for each filtered company
         const newAziende = filteredCompanies.map((company: {
             geometry: { coordinates: [number, number] },
             properties: any
@@ -74,37 +74,36 @@ export async function searchInArea(squareVertices: {
     }
 }
 
-export function setSearchInfo(draw: Draw, setCircleInfo: (value: (((prevState: ({
-    center: number[];
-    radius: number
-} | null)) => ({
-    center: number[];
-    radius: number
-} | null)) | { center: number[]; radius: number } | null)) => void, setSquareVertices: (value: (((prevState: ({
-    topLeft: number[];
-    bottomRight: number[]
-} | null)) => ({ topLeft: number[]; bottomRight: number[] } | null)) | {
-    topLeft: number[];
-    bottomRight: number[]
-} | null)) => void, setDrawInteraction: (interaction: (Draw | null)) => void, mapObjRef: React.MutableRefObject<Map | null>) {
+export function setSearchInfo(
+    draw: Draw,
+    setCircleInfo: (info: { center: number[]; radius: number }) => void,
+    setSquareVertices: (vertices: { topLeft: number[]; bottomRight: number[] }) => void,
+    setDrawInteraction: (interaction: Draw | null) => void,
+    mapObjRef: React.MutableRefObject<Map | null>
+) {
     draw.on('drawend', (event) => {
         const circle = event.feature.getGeometry() as CircleGeom;
         const center = toLonLat(circle.getCenter());
         const radius = circle.getRadius();
-        setCircleInfo({center, radius});
+        setCircleInfo({ center, radius });
         setSquareVertices(calculateSquareVertices(center, radius));
         setDrawInteraction(null);
         mapObjRef.current?.removeInteraction(draw);
     });
 }
 
-export async function fetchEveryCompany(setCompanyNames: (value: (((prevState: string[]) => string[]) | string[])) => void, createMarker: (company: any, vectorSourceRef: React.MutableRefObject<VectorSource | null>) => void, vectorSourceRef: React.MutableRefObject<VectorSource | null>) {
+export async function fetchEveryCompany(setCompanyNames: (value: (((prevState: string[]) => string[]) | string[])) => void, createMarker: (company: any, vectorSourceRef: React.MutableRefObject<VectorSource | null>) => void, vectorSourceRef: React.MutableRefObject<VectorSource | null>, selectedSector: string) {
     try {
         const response = await fetch('/api/companies');
-        const data = await response.json();
-        setCompanyNames(data.map((company: { name: string }) => company.name));
+        var data = await response.json();
+        data = data.filter((company: { properties: { Settore: string } }) =>
+            company.properties && company.properties.Settore.includes(selectedSector)
+        );
 
-        // Create markers for each company
+        // Aggiorna lo stato con i nomi delle aziende filtrate
+        setCompanyNames(data.map((company: { properties: { Nome: string } }) => company.properties.Nome));
+
+        // Crea marker per ogni azienda filtrata
         data.forEach((company: { geometry: { coordinates: [number, number] } }) => {
             createMarker(company, vectorSourceRef);
         });
