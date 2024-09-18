@@ -1,4 +1,5 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface CompanyInfoModalProps {
     companyInfo: {
@@ -16,31 +17,21 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ companyInfo, onClos
     if (!companyInfo) return null;
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-        }}>
-            <div style={{
-                backgroundColor: 'white',
-                padding: '20px',
-                borderRadius: '5px',
-                maxWidth: '500px',
-                width: '100%'
-            }}>
-                <h2>{companyInfo.Nome}</h2>
-                <p><strong>Posizione:</strong> {companyInfo.Posizione}</p>
-                <p><strong>Sito:</strong> <a href={companyInfo.Sito} target="_blank" rel="noopener noreferrer">{companyInfo.Sito}</a></p>
-                <p><strong>Settore:</strong> {companyInfo.Settore}</p>
-                <p><strong>Keywords:</strong> {companyInfo.Keywords}</p>
-                <p><strong>Descrizione:</strong> {companyInfo.Descrizione}</p>
-                <button onClick={onClose}>Chiudi</button>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="modal-title">{companyInfo.Nome}</h5>
+                        <button type="button" className="btn-close" aria-label="Close" onClick={onClose}></button>
+                    </div>
+                    <div className="modal-body">
+                        <p><strong>Posizione:</strong> {companyInfo.Posizione}</p>
+                        <p><strong>Sito:</strong> <a href={companyInfo.Sito} target="_blank" rel="noopener noreferrer">{companyInfo.Sito}</a></p>
+                        <p><strong>Settore:</strong> {companyInfo.Settore}</p>
+                        <p><strong>Keywords:</strong> {companyInfo.Keywords}</p>
+                        <p><strong>Descrizione:</strong> {companyInfo.Descrizione}</p>
+                    </div>
+                </div>
             </div>
         </div>
     );

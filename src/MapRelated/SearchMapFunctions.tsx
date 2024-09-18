@@ -23,40 +23,46 @@ export const calculateSquareVertices = (center: number[], radius: number) => {
     };
 };
 
+
 export async function searchInArea(
-    squareVertices: { topLeft: number[]; bottomRight: number[] },
+    circleInfo: { center: number[]; radius: number },
     setCompanyNames: (value: (((prevState: string[]) => string[]) | string[])) => void,
     setAziende: (value: (((prevState: Azienda[]) => Azienda[]) | Azienda[])) => void,
     createMarker: (company: any, vectorSourceRef: React.MutableRefObject<VectorSource | null>) => void,
     _vectorSourceRef: React.MutableRefObject<VectorSource | null>,
     sector: string
 ) {
-    const { topLeft, bottomRight } = squareVertices;
-
+    var { center, radius } = circleInfo;
     try {
-        const response = await fetch('/api/companies');
+        const response = await fetch('/api/geoquery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                center,
+                radius,
+                sector,
+            }),
+        });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         setCompanyNames(data.map((company: { properties: { Nome: string } }) => company.properties.Nome));
 
-        // Filter companies within the drawn area and by sector
-        const filteredCompanies = data.filter((company: { geometry: { coordinates: [number, number] }, properties: { Settore: string } }) => {
-            const [lon, lat] = company.geometry.coordinates;
-            return lon >= topLeft[0] && lon <= bottomRight[0] && lat >= bottomRight[1] && lat <= topLeft[1] && (sector === '' || company.properties.Settore.includes(sector));
-        });
-        alert(`Number of companies found: ${filteredCompanies.length}`);
+        
+        alert(`Number of companies found: ${data.length}`);
 
         setAziende([]);
 
-        const newAziende = filteredCompanies.map((company: {
-            geometry: { coordinates: [number, number] },
+        const newAziende = data.map((company: {
+            location: { coordinates: [number, number] },
             properties: any
         }) => {
             const azienda = new Azienda(
                 'Feature',
                 'Point',
-                company.geometry.coordinates,
+                company.location.coordinates,
                 company.properties.Nome,
                 company.properties.Posizione,
                 company.properties.Sito,
@@ -77,7 +83,6 @@ export async function searchInArea(
 export function setSearchInfo(
     draw: Draw,
     setCircleInfo: (info: { center: number[]; radius: number }) => void,
-    setSquareVertices: (vertices: { topLeft: number[]; bottomRight: number[] }) => void,
     setDrawInteraction: (interaction: Draw | null) => void,
     mapObjRef: React.MutableRefObject<Map | null>
 ) {
@@ -86,7 +91,6 @@ export function setSearchInfo(
         const center = toLonLat(circle.getCenter());
         const radius = circle.getRadius();
         setCircleInfo({ center, radius });
-        setSquareVertices(calculateSquareVertices(center, radius));
         setDrawInteraction(null);
         mapObjRef.current?.removeInteraction(draw);
     });

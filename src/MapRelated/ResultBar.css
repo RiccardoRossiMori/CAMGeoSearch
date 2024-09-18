@@ -1,0 +1,21 @@
+.resultbar {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Larghezza della barra laterale */
+    width: 300px;
+    height: 100%;
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    overflow-y: auto;
+    transition: left 0.3s ease;
+    z-index: 1000;
+}
+
+.resultbar.open {
+    left: 0;
+}
+
+.result-item {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}

@@ -5,15 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ef5facae-0e25-4228-9e77-2b3d32b3eb19" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/MapRelated/SearchBar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/MapRelated/ResultBar.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/MapRelated/ResultBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Data/Azienda.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/Data/Azienda.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Data/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/Data/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MapRelated/CompanyInfoModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/MapRelated/CompanyInfoModal.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MapRelated/MapComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/MapRelated/MapComponent.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MapRelated/MapDrawningComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/MapRelated/MapDrawningComponent.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MapRelated/SearchBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/MapRelated/SearchBar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MapRelated/SearchMapFunctions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/MapRelated/SearchMapFunctions.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -50,6 +66,11 @@
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;ts.external.directory.path&quot;: &quot;D:\\CodingWorkspace\\CAMGeoSearch\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mongo&quot;
+    ]
   }
 }</component>
   <component name="RecentsManager">
@@ -66,7 +87,11 @@
       <option name="presentableId" value="Default" />
       <updated>1726322863743</updated>
       <workItem from="1726322865647" duration="6135000" />
-      <workItem from="1726411679985" duration="4487000" />
+      <workItem from="1726411679985" duration="5337000" />
+      <workItem from="1726480956837" duration="13182000" />
+      <workItem from="1726606833413" duration="7436000" />
+      <workItem from="1726646593252" duration="1792000" />
+      <workItem from="1726662448795" duration="13028000" />
     </task>
     <servers />
   </component>

@@ -27,7 +27,7 @@ const initializeMap = (
     const mapObj = new Map({
         view: new View({
             center: fromLonLat([13.0678500, 43.1386600]),
-            zoom: 16,
+            zoom: 10,
         }),
         layers: [
             new TileLayer({
@@ -76,7 +76,11 @@ const addMarkers = (mapObj: Map, vectorSource: VectorSource | null) => {
     vectorSource?.addFeatures(newFeatures);
 };
 
-const MapComponent = () => {
+interface MapComponentProps {
+    onSearchResults: (newResults: any[]) => void;
+}
+
+const MapComponent: React.FC<MapComponentProps> = ({ onSearchResults }) => {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const [drawInteraction, setDrawInteraction] = useState<Draw | null>(null);
     const vectorSourceRef = useRef<VectorSource | null>(null);
@@ -127,7 +131,7 @@ const MapComponent = () => {
                 drawInteraction={drawInteraction}
                 setDrawInteraction={setDrawInteraction}
                 vectorSourceRef={vectorSourceRef}
-                selectedSector={selectedSector} // Pass selectedSector prop
+                selectedSector={selectedSector}
             />
             <div className="map" ref={mapRef} />
             <SearchBar

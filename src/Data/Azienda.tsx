@@ -1,6 +1,6 @@
 export class Azienda {
     type: string;
-    geometry: {
+    location: {
         type: string;
         coordinates: [number, number];
     };
@@ -25,7 +25,7 @@ export class Azienda {
         Descrizione: string
     ) {
         this.type = type;
-        this.geometry = {
+        this.location = {
             type: geometryType,
             coordinates: coordinates
         };

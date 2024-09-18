@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="@camgeosearch.eggzu.mongodb.net">
+  <database-model serializer="dbm" dbms="MONGO" family-id="MONGO" format-version="4.53">
+    <root id="1">
+      <ServerVersion>7.0.12</ServerVersion>
+    </root>
+    <schema id="2" parent="1" name="CAMGeoSearch">
+      <LastIntrospectionLocalTimestamp>2024-09-17.15:17:47</LastIntrospectionLocalTimestamp>
+    </schema>
+    <schema id="3" parent="1" name="admin"/>
+    <schema id="4" parent="1" name="local"/>
+    <schema id="5" parent="1" name="test">
+      <Current>1</Current>
+    </schema>
+    <table id="6" parent="2" name="Aziende"/>
+    <column id="7" parent="6" name="_id">
+      <Position>1</Position>
+      <StoredType>ObjectId|12s</StoredType>
+    </column>
+    <column id="8" parent="6" name="geometry">
+      <Position>2</Position>
+      <StoredType>Object|4999544s</StoredType>
+    </column>
+    <column id="9" parent="6" name="geometry.coordinates">
+      <Position>3</Position>
+      <StoredType>Array|2003s</StoredType>
+    </column>
+    <column id="10" parent="6" name="geometry.type">
+      <Position>4</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="11" parent="6" name="properties">
+      <Position>5</Position>
+      <StoredType>Object|4999544s</StoredType>
+    </column>
+    <column id="12" parent="6" name="properties.Descrizione">
+      <Position>6</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="13" parent="6" name="properties.Keywords">
+      <Position>7</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="14" parent="6" name="properties.Nome">
+      <Position>8</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="15" parent="6" name="properties.Posizione">
+      <Position>9</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="16" parent="6" name="properties.Settore">
+      <Position>10</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="17" parent="6" name="properties.Sito">
+      <Position>11</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+    <column id="18" parent="6" name="type">
+      <Position>12</Position>
+      <StoredType>String|12s</StoredType>
+    </column>
+  </database-model>
+</dataSource>
